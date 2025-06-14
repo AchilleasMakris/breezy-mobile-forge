@@ -1,0 +1,172 @@
+# Product Requirements Document: UniTracker
+
+## 1. Introduction
+
+This document outlines the product requirements for **UniTracker**, a Software as a Service (SaaS) mobile and web application. UniTracker is designed to help university students organize their academic life by tracking courses, classes, tasks, and notes, while providing insightful statistics on their progress.
+
+The goal is to create an intuitive, all-in-one academic planner that supports students throughout their university journey and is accessible across multiple platforms.
+
+## 2. Technical Stack
+
+*   **Frontend Framework:** React Native with Expo
+*   **Target Platforms:** Android, iOS, Web
+*   **Backend & Database:** Supabase
+*   **Authentication:** Clerk
+*   **UI:** Must support both Dark and Light modes.
+
+## 3. Monetization: Free & Paid Tiers
+
+UniTracker will operate on a freemium model.
+
+*   **Free Tier:**
+    *   Access to all core features (Dashboard, Courses, Classes, Tasks, Notes, basic Attendance).
+    *   Limits on the number of items (e.g., they can make up to 5 courses, 5 tasks, 5 Notes).
+    *   Basic statistics and attendance tracking.
+    *   Standard notifications.
+
+*   **Paid Tier (UniTracker Pro):**
+    *   Unlimited creation of courses, classes, tasks, and notes.
+    *   Advanced Statistics and predictive insights.
+    *   Advanced attendance features.
+    *   **Calendar Sync** with external providers (e.g., Google Calendar).
+    *   Customizable notifications.
+    *   Priority support.
+
+## 4. Core Features & Functional Requirements
+
+### 4.1. User Authentication (Clerk)
+
+*   **User Story:** As a new user, I want to sign up easily using my email, Google, or other social providers so I can start using the app quickly.
+*   **Requirements:**
+    *   Implement Clerk for user sign-up and sign-in.
+    *   Support email/password, Google, and Apple (for iOS) authentication.
+    *   Provide a secure "Forgot Password" flow.
+    *   The user's profile information should be accessible within the app's settings.
+
+### 4.2. Dashboard
+
+*   **User Story:** As a user, I want to see a summary of my current academic status on a dashboard, including upcoming classes, pending tasks, and key stats, so I can get a quick overview.
+*   **Requirements:**
+    *   Display a welcome message.
+    *   Show a summary of "Today's Classes".
+    *   List upcoming tasks due this week.
+    *   Display key statistics like overall GPA/average grade and total ECTS points earned.
+    *   Quick-action buttons to add new courses, tasks, or notes.
+
+### 4.3. Courses
+
+*   **User Story:** As a student, I want to add and manage all my courses for a semester, including details like grades and professor information, to keep my academic record organized.
+*   **Requirements:**
+    *   Allow users to add a new course with the following fields:
+        *   Course Name (e.g., "Introduction to Computer Science")
+        *   Course ID (e.g., "CS101")
+        *   Professor Name
+        *   ECTS Points (or credits)
+        *   Final Grade (can be left blank until the end of the semester)
+    *   List all added courses in a card-based view.
+    *   Allow users to edit or delete existing courses.
+
+### 4.4. Classes & Calendar
+
+*   **User Story:** As a student, I want to track my class schedule on a calendar, including location and links for online sessions, and sync it with my external calendars so I can manage my entire schedule in one place.
+*   **Requirements:**
+    *   Allow users to add a new class linked to a specific course.
+    *   Fields should include:
+        *   Class Type (Online / In-Person)
+        *   Day of the week and Time (e.g., Monday, 10:00 - 12:00)
+        *   Location (for in-person classes, e.g., "Building A, Room 101")
+        *   Meeting Link (for online classes)
+    *   Display classes on a daily, weekly, and monthly calendar view.
+    *   **Calendar Sync (Paid Feature):** Implement calendar synchronization with Google Calendar. UniTracker events (classes, task due dates) should appear on the user's external calendar.
+
+### 4.5. Tasks
+
+*   **User Story:** As a student, I want to manage my assignments and to-do items, set due dates, and track their status to stay on top of my workload.
+*   **Requirements:**
+    *   Allow users to add a new task, optionally linked to a course.
+    *   Fields should include:
+        *   Task Title
+        *   Due Date and Time
+        *   Status (e.g., To Do, In Progress, Done)
+        *   Priority (e.g., Low, Medium, High)
+    *   Provide a view to see all tasks, with options to filter by course or status.
+    *   Allow users to edit or delete tasks.
+
+### 4.6. Notes
+
+*   **User Story:** As a student, I want to take and organize notes for my classes so I can easily find them when studying.
+*   **Requirements:**
+    *   Allow users to create rich-text notes.
+    *   Notes should be linkable to a specific course or class session.
+    *   Provide a way to search and filter notes.
+    *   Allow users to edit or delete notes.
+
+### 4.7. Statistics
+
+*   **User Story:** As a student, I want to see detailed statistics about my academic performance to understand my strengths and weaknesses.
+*   **Requirements:**
+    *   **Basic Stats (Free Tier):**
+        *   Calculate and display overall GPA / Average Grade.
+        *   Show total ECTS points accumulated.
+    *   **Advanced Stats (Paid Tier):**
+        *   Grade distribution chart (how many A's, B's, C's, etc.).
+        *   Performance trend over time (GPA per semester).
+        *   Performance analysis by course or professor.
+        *   Task completion and productivity charts.
+
+### 4.8. Attendance Tracking
+
+*   **User Story:** As a student, I want to track my attendance for each class to monitor my presence and ensure I meet course requirements.
+*   **Requirements:**
+    *   Allow users to mark attendance for each class session with statuses: 'present', 'absent', 'late', 'excused'.
+    *   Provide a view to see attendance records per course.
+    *   Visualize attendance statistics, like attendance rate per course and overall.
+    *   Allow adding notes for specific attendance records (e.g., reason for absence).
+
+### 4.9. Settings
+
+*   **User Story:** As a user, I want to manage my profile and app preferences, such as theme, notifications, and subscription.
+*   **Requirements:**
+    *   Display the user's Clerk profile with an option to manage their account.
+    *   Include a toggle for **Dark Mode / Light Mode**.
+    *   Include a slider/toggle to enable or disable push notifications.
+    *   Provide access to **Subscription Management** (view current plan, upgrade, access customer portal).
+    *   Display "About" and "Support" information.
+
+## 5. Advanced Analytics Plan
+
+To ensure the success and continuous improvement of UniTracker, a robust analytics strategy is crucial. This plan goes beyond simple usage counts and aims to provide deep insights into user behavior and app performance.
+
+### 5.1. Key Performance Indicators (KPIs)
+
+*   **User Acquisition:** Daily/Monthly Active Users (DAU/MAU).
+*   **User Activation:** Percentage of new users who add at least one course within 24 hours of signup.
+*   **User Retention:** Day 1, Day 7, Day 30 retention rates; Churn Rate.
+*   **Engagement:**
+    *   **Feature Adoption:** Percentage of MAU who use each core feature (Courses, Classes, Tasks, Notes, Attendance).
+    *   **Session Depth:** Average number of core actions (add/edit/complete item) per session.
+    *   **Attendance Rate:** Average attendance rate across all users and courses.
+*   **Monetization:** Conversion Rate from Free to Paid; Average Revenue Per User (ARPU).
+
+### 5.2. Funnel Analysis
+
+1.  **Onboarding Funnel:** App Install -> Sign Up -> First Course Added -> First Task Added -> First Note Taken.
+2.  **Upgrade Funnel (Free-to-Paid):** Track which events or limitations most frequently lead a user to view the pricing modal and upgrade.
+
+### 5.3. Behavioral Segmentation & Analysis
+
+*   **User Personas:** Segment users based on their in-app behavior (e.g., "The Planner," "The Achiever," "The Note-Taker").
+*   **Correlation Analysis:**
+    *   Does a higher number of completed tasks for a course correlate with a higher final grade?
+    *   Does a higher attendance rate correlate with better grades or higher task completion?
+
+## 6. Other Pages & Requirements
+
+### 6.1. Landing Page
+A public-facing marketing page to attract new users, showcase features, display testimonials, and provide sign-up/login links. It should be visually appealing with dynamic elements like an infinite logo slider.
+
+### 6.2. Legal Pages
+Standard `Privacy Policy` and `Terms of Service` pages must be accessible from the app and the landing page.
+
+### 6.3. Security Logging
+Implement client-side and server-side security logging to track important events like authentication attempts (success/failure), data access (CRUD operations on major tables), and subscription changes. This helps in auditing and identifying potential security issues. 

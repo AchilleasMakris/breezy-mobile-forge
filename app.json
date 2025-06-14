@@ -1,0 +1,81 @@
+{
+  "expo": {
+    "name": "UniTracker",
+    "slug": "UniTracker",
+    "version": "1.2.1",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "buildNumber": "11"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "68025a2f-99f9-45d4-93f3-5a997543aaf9"
+      }
+    },
+    "owner": "achilleasmakris",
+    "android": {
+      "package": "com.achilleasmakris.unitracker",
+      "versionCode": 11
+    }
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://dev-api.example.com",
+        "NPM_FLAGS": "--legacy-peer-deps",
+        "ANDROID_HOME": "/mnt/f/Android-Sdk",
+        "ANDROID_BUILD_TOOLS_VERSION": "34.0.0"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://staging-api.example.com",
+        "NPM_FLAGS": "--legacy-peer-deps",
+        "ANDROID_HOME": "/mnt/f/Android-Sdk",
+        "ANDROID_BUILD_TOOLS_VERSION": "34.0.0"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.example.com",
+        "NPM_FLAGS": "--legacy-peer-deps",
+        "ANDROID_HOME": "/mnt/f/Android-Sdk",
+        "ANDROID_BUILD_TOOLS_VERSION": "34.0.0"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

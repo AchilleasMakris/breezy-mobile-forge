@@ -1,0 +1,109 @@
+import React, { useEffect, useState } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
+import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SupabaseProvider } from '@/providers/SupabaseProvider';
+import { tokenCache } from '@clerk/clerk-expo/token-cache';
+import { resourceCache } from '@clerk/clerk-expo/resource-cache';
+
+const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+declare global {
+  interface Window {
+    frameworkReady?: () => void;
+  }
+}
+
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts({
+    'Inter-Regular': Inter_400Regular,
+    'Inter-Medium': Inter_500Medium,
+    'Inter-SemiBold': Inter_600SemiBold,
+    'Inter-Bold': Inter_700Bold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
+  return (
+    <ClerkProvider 
+      publishableKey={CLERK_PUBLISHABLE_KEY!} 
+      tokenCache={tokenCache}
+      __experimental_resourceCache={resourceCache}
+    >
+      <SupabaseProvider>
+        <InitialLayout />
+      </SupabaseProvider>
+    </ClerkProvider>
+  );
+}
+
+function InitialLayout() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    const protectRoutes = async () => {
+      if (!isLoaded) {
+        return;
+      }
+
+      const hasViewedOnboarding = await AsyncStorage.getItem('@viewedOnboarding');
+      const inAuthGroup = segments[0] === '(auth)';
+      const inDrawerGroup = segments[0] === '(drawer)';
+      const inOnboardingGroup = segments[0] === '(onboarding)';
+      
+      if (hasViewedOnboarding !== 'true') {
+        if (!inOnboardingGroup) {
+          router.replace('/(onboarding)');
+        }
+        return;
+      }
+      
+      if (isSignedIn) {
+        if (!inDrawerGroup) {
+          router.replace('/(drawer)');
+        }
+      } else {
+        if (!inAuthGroup) {
+          router.replace('/(auth)');
+        }
+      }
+    };
+    
+    protectRoutes();
+  }, [isLoaded, isSignedIn, segments]);
+
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(drawer)" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style="auto" />
+    </>
+  );
+}
