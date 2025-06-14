@@ -38,6 +38,7 @@ export const SupabaseProvider = ({
   const tokenRef = useRef<string | null>(null);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isRefreshingRef = useRef(false);
+  const lastRefreshRef = useRef<number>(0);
 
   const decodeExp = (jwt: string): number | null => {
     try {
@@ -84,10 +85,26 @@ export const SupabaseProvider = ({
     const now = Date.now();
     const timeUntilExpiry = expiryMs - now;
     
-    // Refresh 5 minutes before expiry for mobile reliability, but at least 30 seconds
-    const refreshDelay = Math.max(timeUntilExpiry - 5 * 60 * 1000, 30 * 1000);
+    // More conservative refresh timing:
+    // - For very short tokens (< 2 minutes), refresh at 75% of lifetime
+    // - For longer tokens, refresh 2 minutes before expiry
+    // - Minimum refresh delay is 60 seconds to prevent excessive refreshing
+    let refreshDelay;
+    if (timeUntilExpiry < 2 * 60 * 1000) {
+      // For very short tokens, refresh at 75% of their lifetime
+      refreshDelay = Math.max(timeUntilExpiry * 0.75, 60 * 1000);
+    } else {
+      // For longer tokens, refresh 2 minutes before expiry
+      refreshDelay = Math.max(timeUntilExpiry - 2 * 60 * 1000, 60 * 1000);
+    }
     
-    console.log(`Scheduling token refresh in ${Math.round(refreshDelay / 1000)} seconds`);
+    // Ensure we don't refresh more than once per minute
+    const timeSinceLastRefresh = now - lastRefreshRef.current;
+    if (timeSinceLastRefresh < 60 * 1000) {
+      refreshDelay = Math.max(refreshDelay, 60 * 1000 - timeSinceLastRefresh);
+    }
+    
+    console.log(`Token expires in ${Math.round(timeUntilExpiry / 1000)} seconds, scheduling refresh in ${Math.round(refreshDelay / 1000)} seconds`);
     
     refreshTimerRef.current = setTimeout(() => {
       console.log('Scheduled refresh triggered');
@@ -101,10 +118,18 @@ export const SupabaseProvider = ({
       return;
     }
     
+    // Rate limiting: don't refresh more than once per minute
+    const now = Date.now();
+    if (now - lastRefreshRef.current < 60 * 1000 && !skipCache) {
+      console.log('Skipping refresh: rate limited');
+      return;
+    }
+    
     isRefreshingRef.current = true;
+    lastRefreshRef.current = now;
     
     try {
-      console.log('Refreshing token, skipCache:', skipCache);
+      console.log('Refreshing token in background, skipCache:', skipCache);
       const token = await getToken({ template: 'supabase-final', skipCache });
       
       if (!token) {
@@ -120,16 +145,16 @@ export const SupabaseProvider = ({
         console.log('Token expires at:', new Date(expMs));
         scheduleRefresh(expMs);
       } else {
-        // If we can't decode expiry, refresh in 45 minutes as fallback
+        // If we can't decode expiry, refresh in 10 minutes as fallback
         console.log('Could not decode token expiry, scheduling fallback refresh');
         if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-        refreshTimerRef.current = setTimeout(() => refreshToken(true), 45 * 60 * 1000);
+        refreshTimerRef.current = setTimeout(() => refreshToken(true), 10 * 60 * 1000);
       }
     } catch (error) {
       console.error("Error refreshing token:", error);
-      // Retry with exponential backoff
+      // Retry with exponential backoff, but not too aggressively
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-      refreshTimerRef.current = setTimeout(() => refreshToken(true), 30 * 1000);
+      refreshTimerRef.current = setTimeout(() => refreshToken(true), 2 * 60 * 1000);
     } finally {
       isRefreshingRef.current = false;
     }
@@ -146,6 +171,7 @@ export const SupabaseProvider = ({
       console.log('User signed out, clearing Supabase client');
       setSupabase(null);
       tokenRef.current = null;
+      lastRefreshRef.current = 0;
       if (refreshTimerRef.current) {
         clearTimeout(refreshTimerRef.current);
         refreshTimerRef.current = null;
@@ -161,13 +187,18 @@ export const SupabaseProvider = ({
     };
   }, [isSignedIn]);
 
-  // Refresh token when app comes to foreground (critical for mobile)
+  // Refresh token when app comes to foreground, but with rate limiting
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {
       console.log('App state changed to:', state);
       if (state === 'active' && isSignedIn) {
-        console.log('App became active, forcing token refresh');
-        refreshToken(true); // Force fresh token when app becomes active
+        const timeSinceLastRefresh = Date.now() - lastRefreshRef.current;
+        if (timeSinceLastRefresh > 2 * 60 * 1000) { // Only if last refresh was more than 2 minutes ago
+          console.log('App became active, refreshing token');
+          refreshToken(true);
+        } else {
+          console.log('App became active, but token was refreshed recently, skipping');
+        }
       }
     });
 
