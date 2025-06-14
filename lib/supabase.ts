@@ -1,3 +1,4 @@
+
 import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 
@@ -23,6 +24,16 @@ export const createAuthenticatedClient = (jwt: string) => {
     auth: {
       persistSession: false, // We don't need Supabase to persist the session as Clerk handles this
       autoRefreshToken: false, // Clerk will handle token refresh
+      detectSessionInUrl: false, // Disable URL-based session detection for mobile
+    },
+    // Add retry logic for network issues common on mobile
+    db: {
+      schema: 'public',
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 2, // Reduce real-time events to prevent token exhaustion
+      },
     },
   });
-}; 
+};
